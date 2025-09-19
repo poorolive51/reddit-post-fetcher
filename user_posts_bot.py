@@ -122,4 +122,13 @@ if __name__ == "__main__":
 
     # Fetch and save user profile data
     user_profile = get_user_profile_data(reddit, target_username)
+
+    # Extract active subreddits from posts and comments
+    active_subreddits = set()
+    for post in user_posts:
+        active_subreddits.add(post["subreddit"])
+    for comment in user_comments:
+        active_subreddits.add(comment["subreddit"])
+    user_profile["active_subreddits"] = sorted(list(active_subreddits))
+
     save_to_file(user_profile, f"profile_of_{target_username}.json")
