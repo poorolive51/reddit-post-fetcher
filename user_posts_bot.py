@@ -41,15 +41,49 @@ def get_user_posts(target_username, limit=100):
         posts_data.append(post_info)
     return posts_data
 
-def save_posts_to_file(posts, filename):
+def get_user_profile_data(target_username):
     """
-    Saves a list of post dictionaries to a JSON file.
+    Connects to Reddit and fetches profile data for a specified user.
+    """
+    reddit = praw.Reddit(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        user_agent=USER_AGENT,
+        username=USERNAME,
+        password=PASSWORD
+    )
+
+    redditor = reddit.redditor(target_username)
+    print(f"Fetching profile data for u/{target_username}...")
+
+    profile_data = {
+        "username": redditor.name,
+        "created_utc": datetime.datetime.fromtimestamp(redditor.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
+        "link_karma": redditor.link_karma,
+        "comment_karma": redditor.comment_karma,
+        "is_employee": redditor.is_employee,
+        "is_mod": redditor.is_mod,
+        "is_gold": redditor.is_gold,
+        "has_verified_email": redditor.has_verified_email,
+        "total_karma": redditor.total_karma
+    }
+    return profile_data
+
+def save_to_file(data, filename):
+    """
+    Saves a dictionary or list of dictionaries to a JSON file.
     """
     with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(posts, f, ensure_ascii=False, indent=4)
-    print(f"Saved {len(posts)} posts to {filename}")
+        json.dump(data, f, ensure_ascii=False, indent=4)
+    print(f"Saved data to {filename}")
 
 if __name__ == "__main__":
     target_username = "nerfn1k"
+
+    # Fetch and save user posts
     user_posts = get_user_posts(target_username)
-    save_posts_to_file(user_posts, f"posts_by_{target_username}.json")
+    save_to_file(user_posts, f"posts_by_{target_username}.json")
+
+    # Fetch and save user profile data
+    user_profile = get_user_profile_data(target_username)
+    save_to_file(user_profile, f"profile_of_{target_username}.json")
