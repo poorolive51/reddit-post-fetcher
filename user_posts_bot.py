@@ -13,19 +13,11 @@ USER_AGENT = os.getenv("REDDIT_USER_AGENT")
 USERNAME = os.getenv("REDDIT_USERNAME")
 PASSWORD = os.getenv("REDDIT_PASSWORD")
 
-def get_user_posts(target_username, limit=100):
+def get_user_posts(reddit_instance, target_username, limit=100):
     """
     Connects to Reddit and fetches recent posts from a specified user.
     """
-    reddit = praw.Reddit(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        user_agent=USER_AGENT,
-        username=USERNAME,
-        password=PASSWORD
-    )
-
-    redditor = reddit.redditor(target_username)
+    redditor = reddit_instance.redditor(target_username)
     print(f"Fetching last {limit} posts from u/{target_username}...")
 
     posts_data = []
@@ -39,21 +31,35 @@ def get_user_posts(target_username, limit=100):
             "author": submission.author.name if submission.author else "[deleted]"
         }
         posts_data.append(post_info)
+    print(f"Finished fetching {len(posts_data)} posts.")
     return posts_data
 
-def get_user_profile_data(target_username):
+def get_user_comments(reddit_instance, target_username, limit=100):
+    """
+    Connects to Reddit and fetches recent comments from a specified user.
+    """
+    redditor = reddit_instance.redditor(target_username)
+    print(f"Fetching last {limit} comments from u/{target_username}...")
+
+    comments_data = []
+    for comment in redditor.comments.new(limit=limit):
+        comment_info = {
+            "body": comment.body,
+            "created_utc": datetime.datetime.fromtimestamp(comment.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
+            "subreddit": comment.subreddit.display_name,
+            "submission_title": comment.submission.title,
+            "submission_url": comment.submission.url,
+            "author": comment.author.name if comment.author else "[deleted]"
+        }
+        comments_data.append(comment_info)
+    print(f"Finished fetching {len(comments_data)} comments.")
+    return comments_data
+
+def get_user_profile_data(reddit_instance, target_username):
     """
     Connects to Reddit and fetches profile data for a specified user.
     """
-    reddit = praw.Reddit(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        user_agent=USER_AGENT,
-        username=USERNAME,
-        password=PASSWORD
-    )
-
-    redditor = reddit.redditor(target_username)
+    redditor = reddit_instance.redditor(target_username)
     print(f"Fetching profile data for u/{target_username}...")
 
     # Get subreddit info if available
@@ -83,6 +89,7 @@ def get_user_profile_data(target_username):
         "contributor_to": contributor_to,
         "moderator_of": moderator_of
     }
+    print(f"Finished fetching profile data for u/{target_username}.")
     return profile_data
 
 def save_to_file(data, filename):
@@ -96,10 +103,23 @@ def save_to_file(data, filename):
 if __name__ == "__main__":
     target_username = "Few_Satisfaction184"
 
+    # Initialize Reddit instance once
+    reddit = praw.Reddit(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        user_agent=USER_AGENT,
+        username=USERNAME,
+        password=PASSWORD
+    )
+
     # Fetch and save user posts
-    user_posts = get_user_posts(target_username)
+    user_posts = get_user_posts(reddit, target_username)
     save_to_file(user_posts, f"posts_by_{target_username}.json")
 
+    # Fetch and save user comments
+    user_comments = get_user_comments(reddit, target_username)
+    save_to_file(user_comments, f"comments_by_{target_username}.json")
+
     # Fetch and save user profile data
-    user_profile = get_user_profile_data(target_username)
+    user_profile = get_user_profile_data(reddit, target_username)
     save_to_file(user_profile, f"profile_of_{target_username}.json")
