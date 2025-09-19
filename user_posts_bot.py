@@ -56,6 +56,18 @@ def get_user_profile_data(target_username):
     redditor = reddit.redditor(target_username)
     print(f"Fetching profile data for u/{target_username}...")
 
+    # Get subreddit info if available
+    subreddit_name = None
+    if redditor.subreddit:
+        subreddit_name = redditor.subreddit.display_name
+
+    # Get trophies
+    trophies = [trophy.name for trophy in redditor.trophies()]
+
+    # Get communities user contributes to or moderates
+    contributor_to = [sub.display_name for sub in getattr(redditor, 'contributor_to', [])]
+    moderator_of = [sub.display_name for sub in getattr(redditor, 'moderator_of', [])]
+
     profile_data = {
         "username": redditor.name,
         "created_utc": datetime.datetime.fromtimestamp(redditor.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
@@ -65,7 +77,11 @@ def get_user_profile_data(target_username):
         "is_mod": redditor.is_mod,
         "is_gold": redditor.is_gold,
         "has_verified_email": redditor.has_verified_email,
-        "total_karma": redditor.total_karma
+        "total_karma": redditor.total_karma,
+        "subreddit_name": subreddit_name,
+        "trophies": trophies,
+        "contributor_to": contributor_to,
+        "moderator_of": moderator_of
     }
     return profile_data
 
@@ -78,7 +94,7 @@ def save_to_file(data, filename):
     print(f"Saved data to {filename}")
 
 if __name__ == "__main__":
-    target_username = "nerfn1k"
+    target_username = "Few_Satisfaction184"
 
     # Fetch and save user posts
     user_posts = get_user_posts(target_username)
