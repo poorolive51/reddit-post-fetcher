@@ -28,7 +28,8 @@ def get_user_posts(reddit_instance, target_username, limit=100):
             "url": submission.url,
             "created_utc": datetime.datetime.fromtimestamp(submission.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
             "subreddit": submission.subreddit.display_name,
-            "author": submission.author.name if submission.author else "[deleted]"
+            "author": submission.author.name if submission.author else "[deleted]",
+            "score": submission.score # Add post score
         }
         posts_data.append(post_info)
     print(f"Finished fetching {len(posts_data)} posts.")
@@ -49,7 +50,8 @@ def get_user_comments(reddit_instance, target_username, limit=100):
             "subreddit": comment.subreddit.display_name,
             "submission_title": comment.submission.title,
             "submission_url": comment.submission.url,
-            "author": comment.author.name if comment.author else "[deleted]"
+            "author": comment.author.name if comment.author else "[deleted]",
+            "score": comment.score # Add comment score
         }
         comments_data.append(comment_info)
     print(f"Finished fetching {len(comments_data)} comments.")

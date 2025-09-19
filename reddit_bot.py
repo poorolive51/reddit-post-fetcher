@@ -35,7 +35,8 @@ def get_subreddit_posts(subreddit_name="netherlands", limit=200):
             "text": submission.selftext,
             "url": submission.url,
             "created_utc": datetime.datetime.fromtimestamp(submission.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
-            "author": submission.author.name if submission.author else "[deleted]" # Extract author username
+            "author": submission.author.name if submission.author else "[deleted]", # Extract author username
+            "score": submission.score # Add post score
         }
         posts_data.append(post_info)
     return posts_data
